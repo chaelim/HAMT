@@ -4,10 +4,10 @@ C++ Template class for HAMT (Hash Array Mapped Trie)
 
 ## Features
  * No initial root hash table required.
- ** Empty hash table just take 8 bytes (in 32 bit build) or 12 bytes in 64 bit build.
+   _(Empty hash table just takes 8 bytes in 32 bit build or 12 bytes in 64 bit build.)_
  * No stop the world rehashing.
  * Faster and smaller.
- ** Constant add/delete O(1) operations
+ * Constant add/delete O(1) operations
  * C++ Template implementation can be easily used to any datatype.
  * 32 bit integer and string (ANSI and Unicode) hash key templates are included.
 
