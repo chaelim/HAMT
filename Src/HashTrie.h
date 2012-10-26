@@ -15,6 +15,7 @@
 #define __HASH_TRIE_H__
 
 #include <stdint.h>
+#include <string.h>
 #include <assert.h>
 
 #if _MSC_VER
@@ -251,17 +252,59 @@ inline uint32 THashKey32<uint64>::GetHash() const
     return (uint32)key;
 }
 
+//===========================================================================
+//    String Helper functions
+//===========================================================================
+
+inline size_t StrLen(const char str[])
+{
+    return strlen(str);
+}
+
+inline size_t StrLen(const wchar_t str[])
+{
+    return wcslen(str);
+}
+
+inline int StrCmp(const char str1[], const char str2[])
+{
+    return strcmp(str1, str2);
+}
+
+inline int StrCmp(const wchar_t str1[], const wchar_t str2[])
+{
+    return wcscmp(str1, str2);
+}
+
+inline int StrCmpI(const char str1[], const char str2[])
+{
+    return _stricmp(str1, str2);
+}
+
+inline int StrCmpI(const wchar_t str1[], const wchar_t str2[])
+{
+    return _wcsicmp (str1, str2);
+}
+
+inline char * StrDup(const char str[])
+{
+    return _strdup(str);
+}
+
+inline wchar_t * StrDup(const wchar_t str[])
+{
+    return _wcsdup(str);
+}
 
 //===========================================================================
 //    TStrCmp and TStrCmpI
 //===========================================================================
-
 template<class CharType>
 class TStrCmp
 {
 public:
     static int StrCmp(const CharType str1[], const CharType str2[]) {
-        return strcmp(str1, str2);
+        return ::StrCmp(str1, str2);
     }
 };
 
@@ -269,9 +312,8 @@ template<class CharType>
 class TStrCmpI
 {
 public:
-    static int StrCmp(const CharType str1[], const CharType str2[])
-    {
-        return strcmpi(str1, str2);
+    static int StrCmp(const CharType str1[], const CharType str2[]) {
+        return ::StrCmpI(str1, str2);
     }
 };
 
@@ -295,7 +337,7 @@ public:
     {
         if (m_str != NULL)
         {
-            int32 strLen = strlen(m_str);
+            size_t strLen = StrLen(m_str);
             return MurmurHash3_x86_32(
                 (const void *)m_str,
                 sizeof(CharType) * strLen,
@@ -330,7 +372,7 @@ public:
     void SetString(const CharType str[])
     {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
-        THashKeyStr<CharType, Cmp>::m_str = str ? _strdup(str) : NULL;
+        THashKeyStr<CharType>::m_str = str ? StrDup(str) : NULL;
     }
 };
 
@@ -344,16 +386,19 @@ public:
     {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
     }
-    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs) {
+    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs)
+    {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
         return *this;
     }
-    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs) {
+    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs)
+    {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str; 
         return *this;
     }
 
-    void SetString (const CharType str[]) {
+    void SetString (const CharType str[])
+    {
         THashKeyStr<CharType, Cmp>::m_str = str;
     }
 };
