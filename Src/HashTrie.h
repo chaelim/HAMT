@@ -1,5 +1,5 @@
 /**
- *
+ *      File: HashTrie.h
  *    Author: CS Lim
  *   Purpose: Templates for CPU Cache-aware compact and high performance hash table
  *   History:
@@ -22,6 +22,7 @@
 #include <intrin.h>
 #endif
 
+// To use POPCNT CPU instruction (in SSE4.2), set SSE42_POPCNT 1
 #define SSE42_POPCNT 0
 
 #if _MSC_VER
@@ -63,28 +64,25 @@ typedef intptr_t        int_ptr;
 
 #else
 
-    inline uint32 rotl32 (uint32 x, int8 r)
-    {
-      return (x << r) | (x >> (32 - r));
+    inline uint32 rotl32 (uint32 x, int8 r) {
+        return (x << r) | (x >> (32 - r));
     }
 
-    inline uint64 rotl64 (uint64 x, int8 r)
-    {
-      return (x << r) | (x >> (64 - r));
+    inline uint64 rotl64 (uint64 x, int8 r) {
+        return (x << r) | (x >> (64 - r));
     }
 
-    inline uint64 rotr32 (uint32 x, int8 r)
-    {
+    inline uint64 rotr32 (uint32 x, int8 r) {
         return (x >> r) | (x << (32 - r))
     }
 
-    inline uint64 rotr64 (uint64 x, int8 r)
-    {
+    inline uint64 rotr64 (uint64 x, int8 r) {
         return (x >> r) | (x << (64 - r))
     }
-    #define    ROTL32(x, y)    rotl32(x, y)
+
+    #define ROTL32(x, y)    rotl32(x, y)
     #define ROTL64(x, y)    rotl64(x, y)
-    #define    ROTR32(x, y)    rotr32(x, y)
+    #define ROTR32(x, y)    rotr32(x, y)
     #define ROTR64(x, y)    rotr64(x, y)
 
 #endif // if _MSC_VER
@@ -100,27 +98,30 @@ typedef intptr_t        int_ptr;
 **/
 
 #if _MSC_VER && SSE42_POPCNT
-inline uint32 GetBitCount(uint32 v)
-{   
+
+inline uint32 GetBitCount(uint32 v) {   
     return __popcnt(v);
 }
+
 #else
-inline uint32 GetBitCount(uint32 v)
-{   
+
+inline uint32 GetBitCount(uint32 v) {   
     v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
     return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
 }
+
 #endif
 
 #if _MSC_VER && SSE42_POPCNT && WIN64
-inline uint32 GetBitCount (uint64 v)
-{
+
+inline uint32 GetBitCount (uint64 v) {
     return __popcnt64(v);
 }
+
 #else
-inline uint32 GetBitCount(uint64 v)
-{
+
+inline uint32 GetBitCount(uint64 v) {
     uint64 c;
     c = v - ((v >> 1) & 0x5555555555555555ull);
     c = ((c >> 2) & 0x3333333333333333ull) + (c & 0x3333333333333333ull);
@@ -132,10 +133,8 @@ inline uint32 GetBitCount(uint64 v)
 #endif
 
 template <class T>
-inline T ClearNthSetBit(T v, int idx)
-{
-    for (T b = v; b;)
-    {
+inline T ClearNthSetBit(T v, int idx) {
+    for (T b = v; b;) {
         T lsb = b & ~(b - 1);
         if (--idx < 0)
             return v ^ lsb;
@@ -156,9 +155,9 @@ uint32 MurmurHash3_x86_32(const void * key, int len, uint32_t seed);
 //    (Helper template class to get 32bit integer hash key value for POD types)
 //===========================================================================
 template <class T>
-class THashKey32
-{
+class THashKey32 {
     static const uint32 MURMUR_HASH3_SEED = sizeof(T);
+
 public:
     THashKey32() : m_key(0) { }
     THashKey32(const T & key) : m_key(key) { }
@@ -176,8 +175,7 @@ protected:
  * Generic Hash function for POD types
  */
 template <class T>
-inline uint32 THashKey32<T>::GetHash() const
-{
+inline uint32 THashKey32<T>::GetHash() const {
     return MurmurHash3_x86_32(
         (const void *)&m_value,
         sizeof(m_value),
@@ -192,8 +190,7 @@ inline uint32 THashKey32<T>::GetHash() const
  * Specialization for 32 bit interger key
  */
 template <>
-inline uint32 THashKey32<int32>::GetHash() const
-{
+inline uint32 THashKey32<int32>::GetHash() const {
     uint32 key = (uint32)m_key;
     key = ~key + (key << 15); // key = (key << 15) - key - 1;
     key ^= ROTR64(key, 12);
@@ -208,8 +205,7 @@ inline uint32 THashKey32<int32>::GetHash() const
  * Specialization for 32 bit interger key
  */
 template <>
-inline uint32 THashKey32<uint32>::GetHash() const
-{
+inline uint32 THashKey32<uint32>::GetHash() const {
     uint32 key = m_key;
     key = ~key + (key << 15); // key = (key << 15) - key - 1;
     key ^= ROTR64(key, 12);
@@ -224,8 +220,7 @@ inline uint32 THashKey32<uint32>::GetHash() const
  * Specialization for 64 bit interger key (64 bit to 32 bit hash)
  */
 template <>
-inline uint32 THashKey32<int64>::GetHash() const
-{
+inline uint32 THashKey32<int64>::GetHash() const {
     uint64 key = (uint64)m_key;
     key = (~key) + (key << 18); // key = (key << 18) - key - 1;
     key ^= ROTR64(key, 31);
@@ -240,8 +235,7 @@ inline uint32 THashKey32<int64>::GetHash() const
  * Specialization for 64 bit interger key (64 bit to 32 bit hash)
  */
 template <>
-inline uint32 THashKey32<uint64>::GetHash() const
-{
+inline uint32 THashKey32<uint64>::GetHash() const {
     uint64 key = m_key;
     key = (~key) + (key << 18); // key = (key << 18) - key - 1;
     key ^= ROTR64(key, 31);
@@ -256,43 +250,35 @@ inline uint32 THashKey32<uint64>::GetHash() const
 //    String Helper functions
 //===========================================================================
 
-inline size_t StrLen(const char str[])
-{
+inline size_t StrLen(const char str[]) {
     return strlen(str);
 }
 
-inline size_t StrLen(const wchar_t str[])
-{
+inline size_t StrLen(const wchar_t str[]) {
     return wcslen(str);
 }
 
-inline int StrCmp(const char str1[], const char str2[])
-{
+inline int StrCmp(const char str1[], const char str2[]) {
     return strcmp(str1, str2);
 }
 
-inline int StrCmp(const wchar_t str1[], const wchar_t str2[])
-{
+inline int StrCmp(const wchar_t str1[], const wchar_t str2[]) {
     return wcscmp(str1, str2);
 }
 
-inline int StrCmpI(const char str1[], const char str2[])
-{
+inline int StrCmpI(const char str1[], const char str2[]) {
     return _stricmp(str1, str2);
 }
 
-inline int StrCmpI(const wchar_t str1[], const wchar_t str2[])
-{
+inline int StrCmpI(const wchar_t str1[], const wchar_t str2[]) {
     return _wcsicmp (str1, str2);
 }
 
-inline char * StrDup(const char str[])
-{
+inline char * StrDup(const char str[]) {
     return _strdup(str);
 }
 
-inline wchar_t * StrDup(const wchar_t str[])
-{
+inline wchar_t * StrDup(const wchar_t str[]) {
     return _wcsdup(str);
 }
 
@@ -325,18 +311,14 @@ template<class CharType, class Cmp>
 class THashKeyStrPtr;
 
 template<class CharType, class Cmp = TStrCmp<CharType> >
-class THashKeyStr
-{
+class THashKeyStr {
 public:
-    bool operator== (const THashKeyStr & rhs) const
-    {
+    bool operator== (const THashKeyStr & rhs) const {
         return (Cmp::StrCmp(m_str, rhs.m_str) == 0);
     }
 
-    uint32 GetHash () const
-    {
-        if (m_str != NULL)
-        {
+    uint32 GetHash () const {
+        if (m_str != NULL) {
             size_t strLen = StrLen(m_str);
             return MurmurHash3_x86_32(
                 (const void *)m_str,
@@ -359,50 +341,43 @@ protected:
 };
 
 template<class CharType, class Cmp = TStrCmp<CharType> >
-class THashKeyStrCopy : public THashKeyStr<CharType, Cmp>
-{
+class THashKeyStrCopy : public THashKeyStr<CharType, Cmp> {
 public:
     THashKeyStrCopy() { }
     THashKeyStrCopy(const CharType str[]) { SetString(str); }
-    ~THashKeyStrCopy()
-    {
+    ~THashKeyStrCopy() {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
     }
     
-    void SetString(const CharType str[])
-    {
+    void SetString(const CharType str[]) {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
         THashKeyStr<CharType>::m_str = str ? StrDup(str) : NULL;
     }
 };
 
 template<class CharType, class Cmp = TStrCmp<CharType> >
-class THashKeyStrPtr : public THashKeyStr<CharType, Cmp>
-{
+class THashKeyStrPtr : public THashKeyStr<CharType, Cmp> {
 public:
     THashKeyStrPtr() { }
     THashKeyStrPtr(const CharType str[]) { SetString(str); }
-    THashKeyStrPtr(const THashKeyStr<CharType, Cmp> & rhs)
-    {
+    THashKeyStrPtr(const THashKeyStr<CharType, Cmp> & rhs) {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
     }
-    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs)
-    {
+    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs) {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
         return *this;
     }
-    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs)
-    {
+    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs) {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str; 
         return *this;
     }
 
-    void SetString (const CharType str[])
-    {
+    void SetString (const CharType str[]) {
         THashKeyStr<CharType, Cmp>::m_str = str;
     }
 };
 
+// Typedefs for convenience
 typedef THashKeyStrCopy<wchar_t>                        CHashKeyStr;
 typedef THashKeyStrPtr <wchar_t>                        CHashKeyStrPtr;
 typedef THashKeyStrCopy<char>                           CHashKeyStrAnsiChar;
@@ -423,8 +398,7 @@ typedef THashKeyStrPtr <char, TStrCmpI<char> >          CHashKeyStrPtrAnsiCharI;
 **/
 
 template <class T, class K>
-class THashTrie
-{
+class THashTrie {
 private:
     // Use the least significant bit as reference marker
     static const uint_ptr   AMT_MARK_BIT    = 1;    // Using LSB for marking AMT (sub-trie) data structure
@@ -445,8 +419,7 @@ private:
     // The pointers in the table are kept in sorted order and correspond to
     // the order of each one bit in the bit map.
     
-    struct ArrayMappedTrie
-    {
+    struct ArrayMappedTrie {
         uint32  m_bitmap;
         T *     m_subHash[1];
         // Do not add more data below
@@ -520,8 +493,7 @@ public:
 // helpers to search for a given entry 
 // this function counts bits in order to return the correct slot for a given hash 
 template<class T, class K>
-T ** THashTrie<T, K>::ArrayMappedTrie::Lookup(uint32 hashIndex)
-{     
+T ** THashTrie<T, K>::ArrayMappedTrie::Lookup(uint32 hashIndex) {
     assert(hashIndex < (1 << HASH_INDEX_BITS));
     uint32 bitPos = (uint32)1 << hashIndex;
     if ((m_bitmap & bitPos) == 0)
@@ -531,13 +503,11 @@ T ** THashTrie<T, K>::ArrayMappedTrie::Lookup(uint32 hashIndex)
 }
 
 template<class T, class K>
-T ** THashTrie<T, K>::ArrayMappedTrie::LookupLinear(const K & key)
-{
+T ** THashTrie<T, K>::ArrayMappedTrie::LookupLinear(const K & key) {
     // Linear search
     T ** cur = m_subHash;
     T ** end = m_subHash + m_bitmap;
-    for (; cur < end; cur++)
-    {
+    for (; cur < end; cur++) {
         if (**cur == key)
             return cur;
     }
@@ -546,8 +516,7 @@ T ** THashTrie<T, K>::ArrayMappedTrie::LookupLinear(const K & key)
 }
 
 template<class T, class K>
-T ** THashTrie<T, K>::ArrayMappedTrie::Alloc1(uint32 bitIndex, T ** slotToReplace)
-{
+T ** THashTrie<T, K>::ArrayMappedTrie::Alloc1(uint32 bitIndex, T ** slotToReplace) {
     // Assert (0 <= bitIndex && bitIndex < 31);
     ArrayMappedTrie * amt = (ArrayMappedTrie *)malloc(sizeof(ArrayMappedTrie));
     amt->m_bitmap = 1 << bitIndex;
@@ -667,8 +636,7 @@ THashTrie<T,K>::ArrayMappedTrie::Resize(
     );
 
     // If it grows then (idx, idx + deltasize) will be inserted
-    if (deltaSize > 0)
-    {
+    if (deltaSize > 0) {
         memmove(
             amt->m_subHash + idx + deltaSize,
             amt->m_subHash + idx,

@@ -1,3 +1,12 @@
+/**
+ *      File: main.cpp
+ *    Author: CS Lim
+ *   Purpose: Simple AMT test program
+ *   History:
+ *  2012/5/3: File Created
+ *
+ */
+
 #include <stdio.h>
 #include <conio.h>
 #include <stdint.h>
@@ -45,14 +54,12 @@ u64 GetMicroTime()
 
 void TestHashTrie ()
 {
-    struct  CTest : THashKey32<uint32>
-    {
+    struct CTest : THashKey32<uint32> {
         CTest (uint32 data) : THashKey32<uint32>(data), m_data(data) { }
         uint32    m_data;
     };
 
-    struct CTestStr : CHashKeyStrAnsiChar
-    {
+    struct CTestStr : CHashKeyStrAnsiChar {
         CTestStr (const char str[]) : CHashKeyStrAnsiChar(str) { }
         uint32    m_data;
     };
@@ -60,30 +67,58 @@ void TestHashTrie ()
     HASH_TRIE(CTest, THashKey32<uint32>)        test_int32;
     HASH_TRIE(CTestStr, CHashKeyStrAnsiChar)    test_str;
 
+    printf("32 bit integer test...\n");
+    printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
     u64 t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++)
-    {
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * test = new CTest(i);
         test_int32.Add(test);
-        CTest * find = test_int32.Find(THashKey32<uint32>(i));
-        assert(test == find);
-
-        // String Hash test
-        char buffer[16];
-        sprintf_s(buffer, "%d", i);
-        CTestStr * test2 = new CTestStr(buffer);
-        test_str.Add(test2);
-        CTestStr * find2 = test_str.Find(CHashKeyStrAnsiChar(buffer));
-        assert(test2 == find2);
     }
+    printf("   %10u usec\n", int(GetMicroTime() - t0));
 
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++)
-    {
+    printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
+    t0 = GetMicroTime();
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+        CTest * find = test_int32.Find(THashKey32<uint32>(i));
+        assert(find->Get() == i);
+    }
+    printf("   %10u usec\n", int(GetMicroTime() - t0));
+
+    printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
+    t0 = GetMicroTime();
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * removed = test_int32.Remove(THashKey32<uint32>(i));
         assert(removed != 0);
         assert(removed->Get() == i);
         delete removed;
+    }
+    printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 
+    printf("ANSI string test...\n");
+    printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
+    t0 = GetMicroTime();
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+        // String Hash test
+        char buffer[16];
+        sprintf_s(buffer, "%d", i);
+        CTestStr * test = new CTestStr(buffer);
+        test_str.Add(test);
+    }
+    printf("   %10u usec\n", int(GetMicroTime() - t0));
+
+    printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
+    t0 = GetMicroTime();
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+        char buffer[16];
+        sprintf_s(buffer, "%d", i);
+        CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
+        assert(strcmp(find->GetString(), buffer) == 0);
+    }
+    printf("   %10u usec\n", int(GetMicroTime() - t0));
+
+    printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
+    t0 = GetMicroTime();
+    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
         CTestStr * removed2 = test_str.Remove(CHashKeyStrAnsiChar(buffer));
@@ -91,12 +126,13 @@ void TestHashTrie ()
         assert(strcmp(removed2->GetString(), buffer) == 0);
         delete removed2;
     }
-
-    printf("trie test   %8d %10uusec\n", MAX_TEST_ENTRIES, int(GetMicroTime() - t0));
+    printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 }
 
 int main (int argc, int argv[])
 {
     TestHashTrie();
+
+    printf("Hit any key to exit.");
     _getch();
 }

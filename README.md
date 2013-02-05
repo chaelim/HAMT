@@ -14,8 +14,15 @@ Do you want space-efficient and fast hash table? HAMT is just here for you. Base
  * Expected tree depth: ![equation](http://latex.codecogs.com/gif.latex?O%28%5Clog_%7B2%5EW%7D%28n%29%29).  
      w = 5  
      n : number of elements stored in the trie
+ * Recently intriduced POPCNT(Population count) CPU intruction (introduced in Nehalem-base and Barcelona microarchitecture CPU). POPCNT can speed up overall performance about 10%.
+
+## Test program build notes
+ * Open and compile Test\IdealHash.sln
+ * To use POPCNT intruction, change 0 to 1 in "#define SSE42_POPCNT 0".
 
 ## More information
  * [Ideal Hash Trees by Phil Bagwell](http://lampwww.epfl.ch/papers/idealhashtrees.pdf).
  * [Wikipedia on Hash array mapped trie](http://en.wikipedia.org/wiki/Hash_array_mapped_trie).
  * [Ideal Hash Tries: an implementation in C++](http://www.altdevblogaday.com/2011/03/22/ideal-hash-tries-an-implementation-in-c/).
+ * [POPCNT Instruction](http://en.wikipedia.org/wiki/SSE4#POPCNT_and_LZCNT)
+
