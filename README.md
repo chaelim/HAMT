@@ -14,7 +14,7 @@ Do you want space-efficient and fast hash table? HAMT is just here for you. Base
  * Expected tree depth: ![equation](http://latex.codecogs.com/gif.latex?O%28%5Clog_%7B2%5EW%7D%28n%29%29).  
      w = 5  
      n : number of elements stored in the trie
- * Recently intriduced POPCNT(Population count) CPU intruction (introduced in Nehalem-base and Barcelona microarchitecture CPU). POPCNT can speed up overall performance about 10%.
+ * Hamming weight of bitmap can be caculated using POPCNT(Population count) CPU intruction (introduced in Nehalem-base and Barcelona microarchitecture CPU). POPCNT can speed up overall performance about 10%.
 
 ## Test program build notes
  * Open and compile Test\IdealHash.sln
