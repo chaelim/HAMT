@@ -99,13 +99,13 @@ typedef intptr_t        int_ptr;
 
 #if _MSC_VER && SSE42_POPCNT
 
-inline uint32 GetBitCount(uint32 v) {   
+inline uint32 GetBitCount(uint32 v) {
     return __popcnt(v);
 }
 
 #else
 
-inline uint32 GetBitCount(uint32 v) {   
+inline uint32 GetBitCount(uint32 v) {
     v = v - ((v >> 1) & 0x55555555);                    // reuse input as temporary
     v = (v & 0x33333333) + ((v >> 2) & 0x33333333);     // temp
     return ((v + (v >> 4) & 0xF0F0F0F) * 0x1010101) >> 24; // count
@@ -286,8 +286,7 @@ inline wchar_t * StrDup(const wchar_t str[]) {
 //    TStrCmp and TStrCmpI
 //===========================================================================
 template<class CharType>
-class TStrCmp
-{
+class TStrCmp {
 public:
     static int StrCmp(const CharType str1[], const CharType str2[]) {
         return ::StrCmp(str1, str2);
@@ -295,8 +294,7 @@ public:
 };
 
 template<class CharType>
-class TStrCmpI
-{
+class TStrCmpI {
 public:
     static int StrCmp(const CharType str1[], const CharType str2[]) {
         return ::StrCmpI(str1, str2);
@@ -537,7 +535,7 @@ T ** THashTrie<T, K>::ArrayMappedTrie::Alloc2(
           sizeof(ArrayMappedTrie)
         + sizeof(T *)
     );
-    amt->m_bitmap = 
+    amt->m_bitmap = \
         ((uint32)1 << hashIndex) | ((uint32)1 << oldHashIndex);
 
     // Sort them in order and return new node
@@ -620,8 +618,7 @@ THashTrie<T,K>::ArrayMappedTrie::Resize(
     assert(newSize > 0);
 
     // if it shrinks then (idx + deltasize, idx) will be removed
-    if (deltaSize < 0)
-    {
+    if (deltaSize < 0) {
         memmove(
             amt->m_subHash + idx,
             amt->m_subHash + idx - deltaSize,
@@ -662,8 +659,7 @@ void THashTrie<T, K>::ArrayMappedTrie::ClearAll(
         return;
 
     amt = (ArrayMappedTrie *)((uint_ptr)amt & (~AMT_MARK_BIT));
-    if (depth < MAX_HAMT_DEPTH)
-    {
+    if (depth < MAX_HAMT_DEPTH) {
         T ** cur = amt->m_subHash;
         T ** end = amt->m_subHash + GetBitCount(amt->m_bitmap);
         for (; cur < end; cur++)
@@ -682,22 +678,19 @@ void THashTrie<T, K>::ArrayMappedTrie::DestroyAll(
     uint32 depth
 ) {
     // If this is a leaf node just destroy the conatining object T
-    if (((uint_ptr)amt & AMT_MARK_BIT) == 0)
-    {
+    if (((uint_ptr)amt & AMT_MARK_BIT) == 0) {
         delete ((T *)amt);
         return;
     }
 
     amt = (ArrayMappedTrie *)((uint_ptr)amt & (~AMT_MARK_BIT));
-    if (depth < MAX_HAMT_DEPTH)
-    {
+    if (depth < MAX_HAMT_DEPTH) {
         T ** cur = amt->m_subHash;
         T ** end = amt->m_subHash + GetBitCount(amt->m_bitmap);
         for (; cur < end; cur++)
             DestroyAll((ArrayMappedTrie *)*cur, depth + 1);
     }
-    else
-    {
+    else {
         T ** cur = amt->m_subHash;
         T ** end = amt->m_subHash + amt->m_bitmap;
         for (; cur < end; cur++)
@@ -709,13 +702,11 @@ void THashTrie<T, K>::ArrayMappedTrie::DestroyAll(
 
 
 #if _MSC_VER
-inline bool HasAMTMarkBit (uint_ptr ptr)
-{
+inline bool HasAMTMarkBit (uint_ptr ptr) {
     return _bittest((const long *)&ptr, 0) != 0;
 }
 #else
-inline bool HasAMTMarkBit (uint_ptr ptr)
-{
+inline bool HasAMTMarkBit (uint_ptr ptr) {
     return (ptr & 1) != 0;
 }
 #endif
@@ -725,11 +716,9 @@ inline bool HasAMTMarkBit (uint_ptr ptr)
 //===========================================================================
 
 template<class T, class K>
-inline void THashTrie<T, K>::Add(T * node)
-{
+inline void THashTrie<T, K>::Add(T * node) {
     // If hash trie is empty just add value/pair node and set it as root
-    if (Empty())
-    {
+    if (Empty()) {
         m_root = node;
         m_count++;
         return;
@@ -739,16 +728,13 @@ inline void THashTrie<T, K>::Add(T * node)
     uint32 hash = node->GetHash();
     uint32 bitShifts = 0;
     T ** slot = &m_root;    // First slot is the root node
-    for (;;)
-    {
+    for (;;) {
         // Leaf node (a T node pointer)?
-        if (!HasAMTMarkBit((uint_ptr)*slot))
-        {
+        if (!HasAMTMarkBit((uint_ptr)*slot)) {
             // Replace if a node already exists with same key.
             // Caller is reponsibile for checking if a different object
             // with same key already exists and prevent memory leak.
-            if (**slot == *node)
-            {
+            if (**slot == *node) {
                 *slot = node;
                 return;
             }
@@ -766,16 +752,14 @@ inline void THashTrie<T, K>::Add(T * node)
 
             // As long as the hashes match, we have to create single element
             // AMT internal nodes. this loop is hopefully nearly always run 0 time.
-            while (bitShifts < MAX_HASH_BITS && (oldHash & HASH_INDEX_MASK) == (hash & HASH_INDEX_MASK))
-            {
+            while (bitShifts < MAX_HASH_BITS && (oldHash & HASH_INDEX_MASK) == (hash & HASH_INDEX_MASK)) {
                 slot = ArrayMappedTrie::Alloc1(hash & HASH_INDEX_MASK, slot);
                 bitShifts += HASH_INDEX_BITS;
                 hash     >>= HASH_INDEX_BITS;
                 oldHash  >>= HASH_INDEX_BITS;
             }
 
-            if (bitShifts < MAX_HASH_BITS)
-            {
+            if (bitShifts < MAX_HASH_BITS) {
                 ArrayMappedTrie::Alloc2(
                     hash & HASH_INDEX_MASK,
                     node,
@@ -784,8 +768,7 @@ inline void THashTrie<T, K>::Add(T * node)
                     slot
                 );
             }
-            else
-            {
+            else {
                 // Consumed all hash bits, alloc and init a linear search table
                 ArrayMappedTrie::Alloc2Linear(
                     node,
@@ -803,12 +786,10 @@ inline void THashTrie<T, K>::Add(T * node)
         //
         ArrayMappedTrie * amt = (ArrayMappedTrie *)((uint_ptr)*slot & (~AMT_MARK_BIT));
         T ** childSlot;
-        if (bitShifts >= MAX_HASH_BITS)
-        {
+        if (bitShifts >= MAX_HASH_BITS) {
             // Consumed all hash bits. Add to the linear search array.
             childSlot = amt->LookupLinear(*node);
-            if (childSlot == NULL)
-            {
+            if (childSlot == NULL) {
                 ArrayMappedTrie::AppendLinear(amt, node, slot);
                 m_count++;
             }
@@ -818,8 +799,7 @@ inline void THashTrie<T, K>::Add(T * node)
         }
 
         childSlot = amt->Lookup(hash & HASH_INDEX_MASK);
-        if (childSlot == NULL)
-        {
+        if (childSlot == NULL) {
             amt = ArrayMappedTrie::Insert(
                 amt,
                 hash & HASH_INDEX_MASK,
@@ -838,8 +818,7 @@ inline void THashTrie<T, K>::Add(T * node)
 }
 
 template<class T, class K>
-T * THashTrie<T, K>::Find(const K & key)
-{
+T * THashTrie<T, K>::Find(const K & key) {
     // Hash trie is empty?
     if (Empty())
         return NULL;
@@ -848,8 +827,7 @@ T * THashTrie<T, K>::Find(const K & key)
     uint32 hash = key.GetHash();
     uint32 bitShifts = 0;
     const T * slot = m_root;    // First slot is the root node
-    for (;;)
-    {
+    for (;;) {
         // Leaf node (a T node pointer)?
         if (((uint_ptr)slot & AMT_MARK_BIT) == 0)
             return (*slot == key) ? (T *)slot : NULL;
@@ -858,8 +836,7 @@ T * THashTrie<T, K>::Find(const K & key)
         // It's an Array Mapped Trie (sub-trie)
         //
         ArrayMappedTrie * amt = (ArrayMappedTrie *)((uint_ptr)slot & (~AMT_MARK_BIT));
-        if (bitShifts >= MAX_HASH_BITS)
-        {
+        if (bitShifts >= MAX_HASH_BITS) {
             // Consumed all hash bits. Run linear search.
             return *(amt->LookupLinear(key));
         }
@@ -879,8 +856,7 @@ T * THashTrie<T, K>::Find(const K & key)
 }
 
 template<class T, class K>
-T * THashTrie<T, K>::Remove(const K & key)
-{
+T * THashTrie<T, K>::Remove(const K & key) {
     T ** slots[MAX_HAMT_DEPTH + 2];
     slots[0] = &m_root;
     
@@ -892,18 +868,15 @@ T * THashTrie<T, K>::Remove(const K & key)
     // First find the leaf node that we want to delete
     //
     int depth = 0; 
-    for (; depth <= MAX_HAMT_DEPTH; ++depth, hash >>= HASH_INDEX_BITS)
-    {
+    for (; depth <= MAX_HAMT_DEPTH; ++depth, hash >>= HASH_INDEX_BITS) {
         // Leaf node?
-        if (((uint_ptr)*slots[depth] & AMT_MARK_BIT) == 0)
-        {
+        if (((uint_ptr)*slots[depth] & AMT_MARK_BIT) == 0) {
             amts[depth] = NULL;
             if (!(**slots[depth] == key))
                 return NULL;
             break;
         }
-        else
-        {
+        else {
             // It's an AMT node
             ArrayMappedTrie * amt = amts[depth] = \
                 (ArrayMappedTrie *)((uint_ptr)*slots[depth] & (~AMT_MARK_BIT));
@@ -918,16 +891,14 @@ T * THashTrie<T, K>::Remove(const K & key)
     T * ret = *slots[depth];
 
     // we are going to have to delete an entry from the internal node at amts[depth]
-    while (--depth >= 0)
-    {
-        int oldsize = depth >= MAX_HAMT_DEPTH ?    \
+    while (--depth >= 0) {
+        int oldsize = depth >= MAX_HAMT_DEPTH ? \
                 (int)(amts[depth]->m_bitmap) :
                 (int)(GetBitCount(amts[depth]->m_bitmap));
         int oldidx  = (int)(slots[depth + 1] - amts[depth]->m_subHash);
 
         // the second condition is that the remaining entry is a leaf
-        if (oldsize == 2 && ((uint_ptr)(amts[depth]->m_subHash[!oldidx]) & AMT_MARK_BIT) == 0)
-        {
+        if (oldsize == 2 && ((uint_ptr)(amts[depth]->m_subHash[!oldidx]) & AMT_MARK_BIT) == 0) {
             // we no longer need this node; just fold the remaining entry,
             // which must be a leaf, into the parent and free this node                                
             *(slots[depth]) = amts[depth]->m_subHash[!oldidx];
@@ -936,8 +907,7 @@ T * THashTrie<T, K>::Remove(const K & key)
         }
 
         // resize this node down by a bit, and update the m_usedBitMap bitfield
-        if (oldsize > 1)
-        {
+        if (oldsize > 1) {
             ArrayMappedTrie * amt = ArrayMappedTrie::Resize(amts[depth], oldsize, -1, oldidx);                
             amt->m_bitmap = (depth >= MAX_HAMT_DEPTH) ? \
                 (amt->m_bitmap - 1) : ClearNthSetBit(amt->m_bitmap, oldidx);
@@ -956,14 +926,12 @@ T * THashTrie<T, K>::Remove(const K & key)
 }
 
 template<class T, class K>
-inline bool THashTrie<T, K>::Empty()
-{
+inline bool THashTrie<T, K>::Empty() {
     return m_root == NULL;
 }
 
 template<class T, class K>
-inline void THashTrie<T, K>::Clear()
-{
+inline void THashTrie<T, K>::Clear() {
     if (Empty())
         return;
 
@@ -975,8 +943,7 @@ inline void THashTrie<T, K>::Clear()
 
 
 template<class T, class K>
-inline void THashTrie<T, K>::Destroy()
-{
+inline void THashTrie<T, K>::Destroy() {
     if (Empty())
         return;
 

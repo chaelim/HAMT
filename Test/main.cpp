@@ -33,8 +33,7 @@ const uint32 MAX_TEST_ENTRIES = 1000000;
 //===========================================================================
 // Timing functions
 //===========================================================================
-u64 GetMicroTime()
-{
+u64 GetMicroTime() {
     u64 hz;
     QueryPerformanceFrequency((LARGE_INTEGER*)&hz);
     
@@ -44,8 +43,7 @@ u64 GetMicroTime()
 }
 #else
 #include <sys/time.h>
-u64 GetMicroTime()
-{
+u64 GetMicroTime() {
     timeval t;
     gettimeofday(&t,NULL);
     return t.tv_sec * 1000000ull + t.tv_usec;
@@ -129,8 +127,7 @@ void TestHashTrie ()
     printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 }
 
-int main (int argc, int argv[])
-{
+int main (int argc, int argv[]) {
     TestHashTrie();
 
     printf("Hit any key to exit.");

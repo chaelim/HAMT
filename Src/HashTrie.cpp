@@ -36,11 +36,13 @@
 
 #define FORCE_INLINE __attribute__((always_inline))
 
-inline uint32_t rotl32( uint32_t x, int8_t r ) {
+inline uint32_t rotl32( uint32_t x, int8_t r )
+{
   return (x << r) | (x >> (32 - r));
 }
 
-inline uint64_t rotl64( uint64_t x, int8_t r ) {
+inline uint64_t rotl64( uint64_t x, int8_t r )
+{
   return (x << r) | (x >> (64 - r));
 }
 
@@ -106,7 +108,7 @@ uint32 MurmurHash3_x86_32(
 
     const uint32_t * blocks = (const uint32_t *)(data + nblocks * 4);
 
-    for(int i = -nblocks; i; i++) {
+    for (int i = -nblocks; i; i++) {
         uint32_t k1 = getblock(blocks,i);
 
         k1 *= c1;
@@ -126,10 +128,10 @@ uint32 MurmurHash3_x86_32(
     uint32_t k1 = 0;
 
     switch(len & 3) {
-    case 3: k1 ^= tail[2] << 16;
-    case 2: k1 ^= tail[1] << 8;
-    case 1: k1 ^= tail[0];
-            k1 *= c1; k1 = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
+        case 3: k1 ^= tail[2] << 16;
+        case 2: k1 ^= tail[1] << 8;
+        case 1: k1 ^= tail[0];
+                k1 *= c1; k1 = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
     };
 
     //----------
@@ -145,5 +147,3 @@ uint32 MurmurHash3_x86_32(
 //===========================================================================
 // END of MurMurHash3 code
 //===========================================================================
-
-

@@ -18,7 +18,7 @@ Do you want space-efficient and fast hash table? HAMT is just here for you. Base
 
 ## Test program build notes
  * Open and compile Test\IdealHash.sln
- * To use POPCNT intruction, change 0 to 1 in "#define SSE42_POPCNT 0".
+ * To use POPCNT instruction, change 0 to 1 in "#define SSE42_POPCNT 0".
 
 ## More information
  * [Ideal Hash Trees by Phil Bagwell](http://lampwww.epfl.ch/papers/idealhashtrees.pdf).
