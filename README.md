@@ -24,7 +24,7 @@ Test program build notes
  * To enable POPCNT CPU instruction, change 0 to 1 in "#define SSE42_POPCNT 0". POPCNT is SSE4 CPU instruction start supported since Intel Nehalem and AMD Barcelona.
  * References on POPCNT:
     - http://en.wikipedia.org/wiki/SSE4#POPCNT_and_LZCNT
-    - http://blogs.amd.com/developer/2007/09/26/barcelona-processor-feature-advanced-bit-manipulation-abm/
+    - http://developer.amd.com/community/blog/barcelona-processor-feature-advanced-bit-manipulation-abm/
 
 More information
 -------------------------
