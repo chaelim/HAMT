@@ -282,6 +282,7 @@ inline wchar_t * StrDup(const wchar_t str[]) {
     return _wcsdup(str);
 }
 
+
 //===========================================================================
 //    TStrCmp and TStrCmpI
 //===========================================================================
@@ -346,7 +347,7 @@ public:
     ~THashKeyStrCopy() {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
     }
-    
+
     void SetString(const CharType str[]) {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
         THashKeyStr<CharType>::m_str = str ? StrDup(str) : NULL;
@@ -366,7 +367,7 @@ public:
         return *this;
     }
     THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs) {
-        THashKeyStr<CharType, Cmp>::m_str = rhs.m_str; 
+        THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
         return *this;
     }
 
@@ -416,7 +417,7 @@ private:
     // A one bit in the bit map represents a valid arc, while a zero an empty arc.
     // The pointers in the table are kept in sorted order and correspond to
     // the order of each one bit in the bit map.
-    
+
     struct ArrayMappedTrie {
         uint32  m_bitmap;
         T *     m_subHash[1];
@@ -465,9 +466,9 @@ private:
         static void DestroyAll(ArrayMappedTrie * amt, uint32 depth=0);
     };
 
-    // Root Hash Table 
-    T *        m_root;
-    uint32    m_count;
+    // Root Hash Table
+    T *         m_root;
+    uint32      m_count;
 
 public:
     THashTrie() : m_root(NULL), m_count(0) { }
@@ -488,8 +489,8 @@ public:
 //    THashTrie<T, K>::ArrayMappedTrie Implementation
 //===========================================================================
 
-// helpers to search for a given entry 
-// this function counts bits in order to return the correct slot for a given hash 
+// helpers to search for a given entry
+// this function counts bits in order to return the correct slot for a given hash
 template<class T, class K>
 T ** THashTrie<T, K>::ArrayMappedTrie::Lookup(uint32 hashIndex) {
     assert(hashIndex < (1 << HASH_INDEX_BITS));
@@ -547,7 +548,7 @@ T ** THashTrie<T, K>::ArrayMappedTrie::Alloc2(
         amt->m_subHash[0] = oldNode;
         amt->m_subHash[1] = node;
     }
-    
+
     *slotToReplace = (T *)((uint_ptr)amt | AMT_MARK_BIT);;
     return amt->m_subHash;
 }
@@ -577,7 +578,7 @@ THashTrie<T, K>::ArrayMappedTrie::Insert(
     uint32      hashIndex,
     T *         node,
     T **        slotToReplace
-) {     
+) {
     uint32 bitPos = (uint32)1 << hashIndex;
     assert((amt->m_bitmap & bitPos) == 0);
 
@@ -590,7 +591,7 @@ THashTrie<T, K>::ArrayMappedTrie::Insert(
 }
 
 template<class T, class K>
-typename THashTrie<T, K>::ArrayMappedTrie * 
+typename THashTrie<T, K>::ArrayMappedTrie *
 THashTrie<T, K>::ArrayMappedTrie::AppendLinear(
     ArrayMappedTrie * amt,
     T *         node,
@@ -732,7 +733,7 @@ inline void THashTrie<T, K>::Add(T * node) {
         // Leaf node (a T node pointer)?
         if (!HasAMTMarkBit((uint_ptr)*slot)) {
             // Replace if a node already exists with same key.
-            // Caller is reponsibile for checking if a different object
+            // Caller is responsible for checking if a different object
             // with same key already exists and prevent memory leak.
             if (**slot == *node) {
                 *slot = node;
@@ -838,7 +839,8 @@ T * THashTrie<T, K>::Find(const K & key) {
         ArrayMappedTrie * amt = (ArrayMappedTrie *)((uint_ptr)slot & (~AMT_MARK_BIT));
         if (bitShifts >= MAX_HASH_BITS) {
             // Consumed all hash bits. Run linear search.
-            return *(amt->LookupLinear(key));
+            T ** linearSlot = amt->LookupLinear(key);
+            return (linearSlot != NULL) ? *(linearSlot) : NULL;
         }
 
         T ** childSlot = amt->Lookup(hash & HASH_INDEX_MASK);
@@ -859,7 +861,7 @@ template<class T, class K>
 T * THashTrie<T, K>::Remove(const K & key) {
     T ** slots[MAX_HAMT_DEPTH + 2];
     slots[0] = &m_root;
-    
+
     ArrayMappedTrie * amts[MAX_HAMT_DEPTH + 2];
     amts[0] = NULL;
 
@@ -867,7 +869,7 @@ T * THashTrie<T, K>::Remove(const K & key) {
     //
     // First find the leaf node that we want to delete
     //
-    int depth = 0; 
+    int depth = 0;
     for (; depth <= MAX_HAMT_DEPTH; ++depth, hash >>= HASH_INDEX_BITS) {
         // Leaf node?
         if (((uint_ptr)*slots[depth] & AMT_MARK_BIT) == 0) {
@@ -900,7 +902,7 @@ T * THashTrie<T, K>::Remove(const K & key) {
         // the second condition is that the remaining entry is a leaf
         if (oldsize == 2 && ((uint_ptr)(amts[depth]->m_subHash[!oldidx]) & AMT_MARK_BIT) == 0) {
             // we no longer need this node; just fold the remaining entry,
-            // which must be a leaf, into the parent and free this node                                
+            // which must be a leaf, into the parent and free this node
             *(slots[depth]) = amts[depth]->m_subHash[!oldidx];
             free(amts[depth]);
             break;
@@ -908,12 +910,12 @@ T * THashTrie<T, K>::Remove(const K & key) {
 
         // resize this node down by a bit, and update the m_usedBitMap bitfield
         if (oldsize > 1) {
-            ArrayMappedTrie * amt = ArrayMappedTrie::Resize(amts[depth], oldsize, -1, oldidx);                
+            ArrayMappedTrie * amt = ArrayMappedTrie::Resize(amts[depth], oldsize, -1, oldidx);
             amt->m_bitmap = (depth >= MAX_HAMT_DEPTH) ? \
                 (amt->m_bitmap - 1) : ClearNthSetBit(amt->m_bitmap, oldidx);
             *(slots[depth]) = (T *)((uint_ptr)amt | AMT_MARK_BIT);    // update the parent slot to point to the resized node
             break;
-        }            
+        }
         free(amts[depth]);    // oldsize==1. delete this node, and then loop to kill the parent too!
     }
 
@@ -936,7 +938,7 @@ inline void THashTrie<T, K>::Clear() {
         return;
 
     ArrayMappedTrie::ClearAll((ArrayMappedTrie *)m_root);
-    
+
     // HashTrie is now empty
     m_root = NULL;
 }
@@ -948,7 +950,7 @@ inline void THashTrie<T, K>::Destroy() {
         return;
 
     ArrayMappedTrie::DestroyAll((ArrayMappedTrie *)m_root);
-    
+
     // HashTrie is now empty
     m_root = NULL;
 }

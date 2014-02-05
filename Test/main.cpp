@@ -11,6 +11,7 @@
 #include <conio.h>
 #include <stdint.h>
 #include <assert.h>
+
 #include "..\Src\HashTrie.h"
 
 extern int TestHashTrie1 ();

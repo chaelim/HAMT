@@ -114,9 +114,9 @@ uint32 MurmurHash3_x86_32(
         k1 *= c1;
         k1 = ROTL32(k1,15);
         k1 *= c2;
-    
+
         h1 ^= k1;
-        h1 = ROTL32(h1, 13); 
+        h1 = ROTL32(h1, 13);
         h1 = h1 * 5 + 0xe6546b64;
     }
 
@@ -142,7 +142,7 @@ uint32 MurmurHash3_x86_32(
     h1 = fmix(h1);
 
     return h1;
-} 
+}
 
 //===========================================================================
 // END of MurMurHash3 code
