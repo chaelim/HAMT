@@ -46,6 +46,7 @@ local.properties
 [Rr]elease/
 *_i.c
 *_p.c
+*.cod
 *.ilk
 *.meta
 *.obj

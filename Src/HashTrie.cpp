@@ -8,7 +8,7 @@
  */
 
 #include <stdint.h>
-#include "HashTrie.h"
+#include <HashTrie.h>
 
 //===========================================================================
 // START of MurMurHash3 code
