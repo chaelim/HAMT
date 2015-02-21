@@ -1,7 +1,7 @@
 /**
  *      File: main.cpp
  *    Author: CS Lim
- *   Purpose: Simple AMT test program
+ *   Purpose: Simple HAMT test program
  *   History:
  *  2012/5/3: File Created
  *
@@ -15,6 +15,9 @@
 
 #include <HashTrie.h>
 
+// Use dlmalloc so that benchmark testing is less affected
+// by platform specific heap manager implementation.
+// e.g. Windows LFH
 #if HAMT_TEST_USE_DLMALLOC
 extern "C"
 {
@@ -44,6 +47,7 @@ const uint32 MAX_TEST_ENTRIES = 1000000;
 #include <conio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 //===========================================================================
 // Timing functions
 //===========================================================================

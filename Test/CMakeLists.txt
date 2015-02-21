@@ -11,21 +11,42 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(../include)
 include(../cmake/BuildSettings.cmake)
 
-# Create project and .exe
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL "limited configs")
+# Maps to a solution file (Tutorial.sln). The solution will 
+# have all targets (exe, lib, dll) as projects (.vcproj)
 project(HAMTTest)
+
+# Turn on the ability to create folders to organize projects (.vcproj)
+# It creates "CMakePredefinedTargets" folder by default and adds CMake
+# defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Create project and .exe
+# Debug;Release;MinSizeRel;RelWithDebInfo
+if (CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
+        "Reset the configurations to what we need"
+        FORCE)
+endif()
+
+# Command to output information to the console
+# Useful for displaying errors, warnings, and debugging
+message("cxx Flags: " ${CMAKE_CXX_FLAGS})
+
 file(GLOB SRCFILES *.cpp)
 file(GLOB INCFILES *.h)
+
 if (HAMT_TEST_USE_DLMALLOC)
     list(APPEND SRCFILES dlmalloc/malloc.c)
 endif()
+
 add_executable(${PROJECT_NAME}  ${SRCFILES} ${INCFILES} config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 include(../cmake/BuildSettings.cmake)
 
 # Add subdirectories with dependencies before dependents so that each subdirectory
 # inherits the include paths gathered from the dependencies before it.
-add_subdirectory(../src hamt)
+add_subdirectory(../src HAMT)
 
 # Add libraries with dependencies after dependents to satisfy ld linker.
 target_link_libraries(${PROJECT_NAME} HAMT)
