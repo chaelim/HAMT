@@ -54,7 +54,7 @@ const uint32 MAX_TEST_ENTRIES = 1000000;
 u64 GetMicroTime() {
     u64 hz;
     QueryPerformanceFrequency((LARGE_INTEGER*)&hz);
-    
+
     u64 t;
     QueryPerformanceCounter((LARGE_INTEGER*)&t);
     return (t * 1000000) / hz;

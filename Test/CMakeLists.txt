@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.2)
 
 # Default build-time configuration options
 # Can be modified via CMake GUI or via CMake command line
+option(SSE42_POPCNT "Use POPCNT CPU in SSE4.2 instruction" ON)
 option(HAMT_TEST_USE_DLMALLOC "Use DLMalloc instead of the default C runtime platform malloc" ON)
-#option(WIN64 "Default generate x64" ON)
+option(WIN64 "Default generate x64" ON)
 
 # Write build-time configuration options to a header file
 configure_file(config.h.in config.h)
@@ -42,11 +43,13 @@ endif()
 
 add_executable(${PROJECT_NAME}  ${SRCFILES} ${INCFILES} config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
-include(../cmake/BuildSettings.cmake)
-
 # Add subdirectories with dependencies before dependents so that each subdirectory
 # inherits the include paths gathered from the dependencies before it.
 add_subdirectory(../src HAMT)
 
 # Add libraries with dependencies after dependents to satisfy ld linker.
 target_link_libraries(${PROJECT_NAME} HAMT)
+
+# Adds logic to INSTALL.vcproj to copy HAMTTest.exe to destination directory
+install(TARGETS HAMTTest
+		 RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)

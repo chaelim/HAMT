@@ -2,4 +2,5 @@
 // Build-time configuration
 //---------------------------------------------------
 
+#cmakedefine01 SSE42_POPCNT
 #cmakedefine01 HAMT_TEST_USE_DLMALLOC
