@@ -17,12 +17,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <exception>
 
 #if _MSC_VER
 #include <intrin.h>
 #endif
 
-#if _MSC_VER
+#ifdef _MSC_VER
     #define COMPILER_CHECK(expr, msg)  typedef char COMPILE_ERROR_##msg[1][(expr)]
 #else
     #define COMPILER_CHECK(expr, msg)  typedef char COMPILE_ERROR_##msg[1][(expr)?1:-1]
@@ -51,7 +52,7 @@ typedef intptr_t        int_ptr;
 //===========================================================================
 // Helpers for bit operations
 //===========================================================================
-#if _MSC_VER
+#ifdef _MSC_VER
 
     #include <stdlib.h>
     #define ROTL32(x, y)    _rotl(x,y)
@@ -118,9 +119,9 @@ inline uint32 GetBitCount(uint32 v) noexcept
 
 #if defined(_MSC_VER) && defined(_WIN64) && SSE42_POPCNT
 
-inline uint32 GetBitCount (uint64 v) noexcept
+inline uint32 GetBitCount(uint64 v) noexcept
 {
-    return __popcnt64(v);
+    return (uint32)__popcnt64(v);
 }
 
 #else
@@ -154,7 +155,6 @@ inline T ClearNthSetBit(T v, int idx) noexcept
 //===========================================================================
 // MurmurHash3
 uint32 MurmurHash3_x86_32(const void * key, int len, uint32_t seed) noexcept;
-
 
 //===========================================================================
 //    THashKey32
@@ -260,7 +260,6 @@ inline uint32 THashKey32<uint64>::GetHash() const noexcept
 //===========================================================================
 //    String Helper functions
 //===========================================================================
-
 inline size_t StrLen(const char str[])
 {
     return strlen(str);
@@ -347,8 +346,8 @@ public:
             size_t strLen = StrLen(m_str);
             return MurmurHash3_x86_32(
                 (const void *)m_str,
-                sizeof(CharType) * strLen,
-                strLen    // use string length as seed value
+                (int)(sizeof(CharType) * strLen),
+                (int)strLen    // use string length as seed value
             );
         }
         else
@@ -369,14 +368,14 @@ template<class CharType, class Cmp = TStrCmp<CharType> >
 class THashKeyStrCopy : public THashKeyStr<CharType, Cmp>
 {
 public:
-    THashKeyStrCopy() { }
-    THashKeyStrCopy(const CharType str[]) { SetString(str); }
-    ~THashKeyStrCopy()
+    THashKeyStrCopy() noexcept { }
+    THashKeyStrCopy(const CharType str[]) noexcept { SetString(str); }
+    ~THashKeyStrCopy() noexcept
     {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
     }
 
-    void SetString(const CharType str[])
+    void SetString(const CharType str[]) noexcept
     {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
         THashKeyStr<CharType>::m_str = str ? StrDup(str) : NULL;
@@ -387,25 +386,25 @@ template<class CharType, class Cmp = TStrCmp<CharType> >
 class THashKeyStrPtr : public THashKeyStr<CharType, Cmp>
 {
 public:
-    THashKeyStrPtr() { }
-    THashKeyStrPtr(const CharType str[]) { SetString(str); }
-    THashKeyStrPtr(const THashKeyStr<CharType, Cmp> & rhs)
+    THashKeyStrPtr() noexcept { }
+    THashKeyStrPtr(const CharType str[]) noexcept { SetString(str); }
+    THashKeyStrPtr(const THashKeyStr<CharType, Cmp> & rhs) noexcept
     {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
     }
     
-    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs)
+    THashKeyStrPtr & operator=(const THashKeyStr<CharType, Cmp> & rhs) noexcept
     {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
         return *this;
     }
-    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs)
+    THashKeyStrPtr & operator=(const THashKeyStrPtr<CharType, Cmp> & rhs) noexcept
     {
         THashKeyStr<CharType, Cmp>::m_str = rhs.m_str;
         return *this;
     }
 
-    void SetString (const CharType str[])
+    void SetString (const CharType str[]) noexcept
     {
         THashKeyStr<CharType, Cmp>::m_str = str;
     }
@@ -465,7 +464,7 @@ private:
         inline T ** LookupLinear(const K & key);
 
         static T ** Alloc1(
-            uint32    bitIndex,
+            uint32  bitIndex,
             T **    slotToReplace
         );
         static T ** Alloc2(
@@ -486,20 +485,20 @@ private:
             uint32      hashIndex,
             T *         node,
             T **        slotToReplace
-        );
+        ) noexcept;
         static ArrayMappedTrie * AppendLinear(
             ArrayMappedTrie *   amt,
             T *         node,
             T **        slotToReplace
-        );
+        ) noexcept;
         static ArrayMappedTrie * Resize(
             ArrayMappedTrie * amt,
             int         oldSize,
             int         deltasize,
             int         idx
-        );
+        ) noexcept;
 
-        static void ClearAll(ArrayMappedTrie * amt, uint32 depth=0);
+        static void ClearAll(ArrayMappedTrie * amt, uint32 depth=0) noexcept;
         static void DestroyAll(ArrayMappedTrie * amt, uint32 depth=0);
     };
 
@@ -508,16 +507,19 @@ private:
     uint32      m_count;
 
 public:
-    THashTrie() : m_root(NULL), m_count(0) { }
-    ~THashTrie() { Clear(); }
+    THashTrie() noexcept : m_root(NULL), m_count(0) { }
+    ~THashTrie() noexcept { Clear(); }
+    THashTrie(THashTrie &&) = delete;
+    THashTrie(THashTrie const &) = delete;
+    THashTrie& operator=(THashTrie const &) = delete;
 
 public:
     void Add(T * node);
-    T * Find(const K & key);
-    T * Remove(const K & key);
-    bool Empty();
-    uint32 GetCount() { return m_count; }
-    void Clear();        // Destruct HAMT data structures only
+    T * Find(const K & key) noexcept;
+    T * Remove(const K & key) noexcept;
+    bool Empty() noexcept;
+    uint32 GetCount() noexcept { return m_count; }
+    void Clear() noexcept;        // Destruct HAMT data structures only
     void Destroy();    // Destruct HAMT data structures as well as containing objects
 };
 
@@ -554,9 +556,13 @@ T ** THashTrie<T, K>::ArrayMappedTrie::LookupLinear(const K & key)
 }
 
 template<class T, class K>
-T ** THashTrie<T, K>::ArrayMappedTrie::Alloc1(uint32 bitIndex, T ** slotToReplace) {
+T ** THashTrie<T, K>::ArrayMappedTrie::Alloc1(uint32 bitIndex, T ** slotToReplace)
+{
     // Assert (0 <= bitIndex && bitIndex < 31);
     ArrayMappedTrie * amt = (ArrayMappedTrie *)malloc(sizeof(ArrayMappedTrie));
+    if (!amt)
+        throw std::bad_alloc();
+
     amt->m_bitmap = 1 << bitIndex;
     *slotToReplace = (T *)((uint_ptr)amt | AMT_MARK_BIT);
     return amt->m_subHash;
@@ -575,6 +581,9 @@ T ** THashTrie<T, K>::ArrayMappedTrie::Alloc2(
           sizeof(ArrayMappedTrie)
         + sizeof(T *)
     );
+    if (!amt)
+        throw std::bad_alloc();
+
     amt->m_bitmap = ((uint32)1 << hashIndex) | ((uint32)1 << oldHashIndex);
 
     // Sort them in order and return new node
@@ -602,6 +611,9 @@ T ** THashTrie<T, K>::ArrayMappedTrie::Alloc2Linear(
           sizeof(ArrayMappedTrie)
         + sizeof(T *)
     );
+    if (!amt)
+        throw std::bad_alloc();
+
     amt->m_bitmap = 2;    // Number of entry in the linear search array
     amt->m_subHash[0] = node;
     amt->m_subHash[1] = oldNode;
@@ -616,7 +628,7 @@ THashTrie<T, K>::ArrayMappedTrie::Insert(
     uint32      hashIndex,
     T *         node,
     T **        slotToReplace
-) {
+) noexcept {
     uint32 bitPos = (uint32)1 << hashIndex;
     assert((amt->m_bitmap & bitPos) == 0);
 
@@ -634,7 +646,7 @@ THashTrie<T, K>::ArrayMappedTrie::AppendLinear(
     ArrayMappedTrie * amt,
     T *         node,
     T **        slotToReplace
-) {
+) noexcept {
     amt = Resize(amt, amt->m_bitmap, 1, amt->m_bitmap);
     amt->m_subHash[amt->m_bitmap] = node;
     amt->m_bitmap++;
@@ -651,7 +663,7 @@ THashTrie<T,K>::ArrayMappedTrie::Resize(
     int        oldSize,
     int        deltaSize,
     int        idx
-) {
+) noexcept {
     assert(deltaSize != 0);
     int newSize = oldSize + deltaSize;
     assert(newSize > 0);
@@ -692,7 +704,7 @@ template<class T, class K>
 void THashTrie<T, K>::ArrayMappedTrie::ClearAll(
     ArrayMappedTrie * amt,
     uint32 depth
-) {
+) noexcept {
     // If this is a leaf node, do nothing
     if (((uint_ptr)amt & AMT_MARK_BIT) == 0)
         return;
@@ -741,7 +753,7 @@ void THashTrie<T, K>::ArrayMappedTrie::DestroyAll(
 
 
 #if _MSC_VER
-inline bool HasAMTMarkBit (uint_ptr ptr) {
+inline bool HasAMTMarkBit (uint_ptr ptr) noexcept {
     return _bittest((const long *)&ptr, 0) != 0;
 }
 #else
@@ -858,7 +870,7 @@ inline void THashTrie<T, K>::Add(T * node)
 }
 
 template<class T, class K>
-T * THashTrie<T, K>::Find(const K & key)
+T * THashTrie<T, K>::Find(const K & key) noexcept
 {
     // Hash trie is empty?
     if (Empty())
@@ -892,13 +904,10 @@ T * THashTrie<T, K>::Find(const K & key)
         bitShifts += HASH_INDEX_BITS;
         hash     >>= HASH_INDEX_BITS;
     }
-
-    // !!! SHOULD NEVER BE HERE !!!
-    assert(false);
 }
 
 template<class T, class K>
-T * THashTrie<T, K>::Remove(const K & key)
+T * THashTrie<T, K>::Remove(const K & key) noexcept
 {
     T ** slots[MAX_HAMT_DEPTH + 2];
     slots[0] = &m_root;
@@ -969,13 +978,13 @@ T * THashTrie<T, K>::Remove(const K & key)
 }
 
 template<class T, class K>
-inline bool THashTrie<T, K>::Empty()
+inline bool THashTrie<T, K>::Empty() noexcept
 {
     return m_root == NULL;
 }
 
 template<class T, class K>
-inline void THashTrie<T, K>::Clear()
+inline void THashTrie<T, K>::Clear() noexcept
 {
     if (Empty())
         return;

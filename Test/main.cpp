@@ -104,7 +104,7 @@ void TestHashTrie ()
 
     printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * find = test_int32.Find(THashKey32<uint32>(i));
         volatile uint32 value = find->Get();
         assert(value == i);
@@ -113,7 +113,7 @@ void TestHashTrie ()
 
     printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * removed = test_int32.Remove(THashKey32<uint32>(i));
         assert(removed != 0);
         assert(removed->Get() == i);
@@ -124,7 +124,7 @@ void TestHashTrie ()
     printf("ANSI string test...\n");
     printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         // String Hash test
         char buffer[16];
         sprintf_s(buffer, "%d", i);
@@ -135,17 +135,17 @@ void TestHashTrie ()
 
     printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
-        CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
+        volatile CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
         assert(strcmp(find->GetString(), buffer) == 0);
     }
     printf("   %10u usec\n", int(GetMicroTime() - t0));
 
     printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
         CTestStr * removed2 = test_str.Remove(CHashKeyStrAnsiChar(buffer));
@@ -156,7 +156,7 @@ void TestHashTrie ()
     printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 }
 
-int main (int argc, int argv[])
+int main ()
 {
     TestHashTrie();
 }
