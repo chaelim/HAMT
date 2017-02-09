@@ -52,4 +52,4 @@ target_link_libraries(${PROJECT_NAME} HAMT)
 
 # Adds logic to INSTALL.vcproj to copy HAMTTest.exe to destination directory
 install(TARGETS HAMTTest
-		 RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
+        RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)

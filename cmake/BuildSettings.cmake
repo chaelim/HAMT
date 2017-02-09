@@ -29,7 +29,7 @@ if(${MSVC})
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "" CACHE STRING "Additional linker settings in Release" FORCE)
 
     # Enable debug info in Release.
-    #set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /debug")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /debug")
 
     # Set compiler flags and options.
     # Here it is setting the Visual Studio warning level to 4

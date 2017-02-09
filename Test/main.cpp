@@ -148,7 +148,4 @@ void TestHashTrie ()
 
 int main (int argc, int argv[]) {
     TestHashTrie();
-
-    printf("Hit any key to exit.");
-    _getch();
 }
