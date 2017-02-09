@@ -19,16 +19,20 @@
 // by platform specific heap manager implementation.
 // e.g. Windows LFH
 #if HAMT_TEST_USE_DLMALLOC
+
 extern "C"
 {
     void* dlmalloc(size_t);
     void  dlfree(void*);
 }
+
 inline void* operator new(size_t size){ return dlmalloc(size); }
+
 inline void operator delete(void* p)
 {
     return dlfree(p);
 }
+
 #endif
 
 
@@ -44,6 +48,7 @@ typedef int64_t s64;
 const uint32 MAX_TEST_ENTRIES = 1000000;
 
 #ifdef WIN32
+
 #include <conio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -51,7 +56,8 @@ const uint32 MAX_TEST_ENTRIES = 1000000;
 //===========================================================================
 // Timing functions
 //===========================================================================
-u64 GetMicroTime() {
+u64 GetMicroTime()
+{
     u64 hz;
     QueryPerformanceFrequency((LARGE_INTEGER*)&hz);
 
@@ -59,13 +65,17 @@ u64 GetMicroTime() {
     QueryPerformanceCounter((LARGE_INTEGER*)&t);
     return (t * 1000000) / hz;
 }
+
 #else
+
 #include <sys/time.h>
-u64 GetMicroTime() {
+u64 GetMicroTime()
+{
     timeval t;
     gettimeofday(&t,NULL);
     return t.tv_sec * 1000000ull + t.tv_usec;
 }
+
 #endif
 
 void TestHashTrie ()
@@ -94,7 +104,7 @@ void TestHashTrie ()
 
     printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * find = test_int32.Find(THashKey32<uint32>(i));
         volatile uint32 value = find->Get();
         assert(value == i);
@@ -103,7 +113,7 @@ void TestHashTrie ()
 
     printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         CTest * removed = test_int32.Remove(THashKey32<uint32>(i));
         assert(removed != 0);
         assert(removed->Get() == i);
@@ -114,7 +124,7 @@ void TestHashTrie ()
     printf("ANSI string test...\n");
     printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         // String Hash test
         char buffer[16];
         sprintf_s(buffer, "%d", i);
@@ -125,17 +135,17 @@ void TestHashTrie ()
 
     printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
-        CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
+        volatile CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
         assert(strcmp(find->GetString(), buffer) == 0);
     }
     printf("   %10u usec\n", int(GetMicroTime() - t0));
 
     printf("3) Remove %d entries: ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (int i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
         CTestStr * removed2 = test_str.Remove(CHashKeyStrAnsiChar(buffer));
@@ -146,6 +156,7 @@ void TestHashTrie ()
     printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 }
 
-int main (int argc, int argv[]) {
+int main ()
+{
     TestHashTrie();
 }

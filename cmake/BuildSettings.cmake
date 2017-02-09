@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 
 #
-# Platfor specific flags
+# Platform specific flags
 #
 if(${WIN32})
     add_definitions(-DWIN32)
@@ -33,7 +33,11 @@ if(${MSVC})
 
     # Set compiler flags and options.
     # Here it is setting the Visual Studio warning level to 4
-    # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    
+    # /EHsc : Catches C++ exceptions only and tells the compiler to assume that
+    # functions declared as extern "C" never throw a C++ exception.
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
 elseif(${UNIX})
 
