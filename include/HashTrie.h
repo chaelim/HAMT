@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <wchar.h>
 #include <exception>
 
 #if _MSC_VER
@@ -292,12 +293,32 @@ inline int StrCmpI(const wchar_t str1[], const wchar_t str2[])
 
 inline char * StrDup(const char str[])
 {
-    return _strdup(str);
+    if (str == nullptr)
+        return nullptr;
+
+    size_t const size = strlen(str) + 1;
+    char * const memory = static_cast<char *>(malloc(size));
+
+    if (memory == nullptr)
+        return nullptr;
+    
+    strcpy(memory, str);
+    return memory;
 }
 
 inline wchar_t * StrDup(const wchar_t str[])
 {
-    return _wcsdup(str);
+    if (str == nullptr)
+        return nullptr;
+
+    size_t const size = wcslen(str) + 1;
+    wchar_t * const memory = static_cast<wchar_t *>(malloc(size));
+
+    if (memory == nullptr)
+        return nullptr;
+
+    wcscpy(memory, str);
+    return memory;
 }
 
 
@@ -375,7 +396,7 @@ public:
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
     }
 
-    void SetString(const CharType str[]) noexcept
+    void SetString(const CharType str[])
     {
         free(const_cast<CharType *>(THashKeyStr<CharType>::m_str));
         THashKeyStr<CharType>::m_str = str ? StrDup(str) : NULL;

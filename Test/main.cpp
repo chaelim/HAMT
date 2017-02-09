@@ -13,8 +13,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <HashTrie.h>
-
 // Use dlmalloc so that benchmark testing is less affected
 // by platform specific heap manager implementation.
 // e.g. Windows LFH
@@ -23,17 +21,39 @@
 extern "C"
 {
     void* dlmalloc(size_t);
+    void* dlcalloc(size_t, size_t);
     void  dlfree(void*);
+    void* dlrealloc(void*, size_t);
 }
 
-inline void* operator new(size_t size){ return dlmalloc(size); }
+#define malloc dlmalloc
+#define calloc dlcalloc
+#define free dlfree
+#define realloc dlrealloc
 
-inline void operator delete(void* p)
+inline void *operator new(size_t cb)
 {
-    return dlfree(p);
+    return dlmalloc(cb);
+}
+
+inline void *operator new[](size_t cb)
+{
+    return dlmalloc(cb);
+}
+
+inline void operator delete(void *p)
+{
+    dlfree(p);
+}
+
+inline void operator delete[](void *p)
+{
+    dlfree(p);
 }
 
 #endif
+
+#include <HashTrie.h>
 
 
 typedef unsigned char u8;
@@ -138,7 +158,7 @@ void TestHashTrie ()
     for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
-        volatile CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
+        CTestStr * find = test_str.Find(CHashKeyStrAnsiChar(buffer));
         assert(strcmp(find->GetString(), buffer) == 0);
     }
     printf("   %10u usec\n", int(GetMicroTime() - t0));
