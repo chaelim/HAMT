@@ -46,6 +46,7 @@ local.properties
 [Rr]elease/
 *_i.c
 *_p.c
+*.cod
 *.ilk
 *.meta
 *.obj
@@ -62,6 +63,7 @@ local.properties
 *.vspscc
 .builds
 *.dotCover
+_build
 
 ## TODO: If you have NuGet Package Restore enabled, uncomment this
 #packages/

@@ -22,9 +22,6 @@
 #include <intrin.h>
 #endif
 
-// To use POPCNT CPU instruction (in SSE4.2), set SSE42_POPCNT 1
-#define SSE42_POPCNT 0
-
 #if _MSC_VER
     #define COMPILER_CHECK(expr, msg)  typedef char COMPILE_ERROR_##msg[1][(expr)]
 #else
@@ -73,11 +70,11 @@ typedef intptr_t        int_ptr;
     }
 
     inline uint64 rotr32 (uint32 x, int8 r) {
-        return (x >> r) | (x << (32 - r))
+        return (x >> r) | (x << (32 - r));
     }
 
     inline uint64 rotr64 (uint64 x, int8 r) {
-        return (x >> r) | (x << (64 - r))
+        return (x >> r) | (x << (64 - r));
     }
 
     #define ROTL32(x, y)    rotl32(x, y)
@@ -177,8 +174,8 @@ protected:
 template <class T>
 inline uint32 THashKey32<T>::GetHash() const {
     return MurmurHash3_x86_32(
-        (const void *)&m_value,
-        sizeof(m_value),
+        (const void *)&m_key,
+        sizeof(m_key),
         MURMUR_HASH3_SEED
     );
 }
@@ -748,8 +745,8 @@ inline void THashTrie<T, K>::Add(T * node) {
             //    The existing key is then inserted in the new sub-hash table and
             //    the new key added.
 
-            T *        oldNode = *slot;
-            uint32    oldHash = oldNode->GetHash() >> bitShifts;
+            T *     oldNode = *slot;
+            uint32  oldHash = oldNode->GetHash() >> bitShifts;
 
             // As long as the hashes match, we have to create single element
             // AMT internal nodes. this loop is hopefully nearly always run 0 time.
@@ -880,9 +877,9 @@ T * THashTrie<T, K>::Remove(const K & key) {
         }
         else {
             // It's an AMT node
-            ArrayMappedTrie * amt = amts[depth] = \
+            ArrayMappedTrie * amt = amts[depth] =
                 (ArrayMappedTrie *)((uint_ptr)*slots[depth] & (~AMT_MARK_BIT));
-            slots[depth + 1] = (depth >= MAX_HAMT_DEPTH) ? \
+            slots[depth + 1] = (depth >= MAX_HAMT_DEPTH) ?
                     amt->LookupLinear(key) : amt->Lookup(hash & HASH_INDEX_MASK);
             if (slots[depth + 1] == NULL)
                 return NULL;
@@ -894,7 +891,7 @@ T * THashTrie<T, K>::Remove(const K & key) {
 
     // we are going to have to delete an entry from the internal node at amts[depth]
     while (--depth >= 0) {
-        int oldsize = depth >= MAX_HAMT_DEPTH ? \
+        int oldsize = depth >= MAX_HAMT_DEPTH ?
                 (int)(amts[depth]->m_bitmap) :
                 (int)(GetBitCount(amts[depth]->m_bitmap));
         int oldidx  = (int)(slots[depth + 1] - amts[depth]->m_subHash);
@@ -911,7 +908,7 @@ T * THashTrie<T, K>::Remove(const K & key) {
         // resize this node down by a bit, and update the m_usedBitMap bitfield
         if (oldsize > 1) {
             ArrayMappedTrie * amt = ArrayMappedTrie::Resize(amts[depth], oldsize, -1, oldidx);
-            amt->m_bitmap = (depth >= MAX_HAMT_DEPTH) ? \
+            amt->m_bitmap = (depth >= MAX_HAMT_DEPTH) ?
                 (amt->m_bitmap - 1) : ClearNthSetBit(amt->m_bitmap, oldidx);
             *(slots[depth]) = (T *)((uint_ptr)amt | AMT_MARK_BIT);    // update the parent slot to point to the resized node
             break;
