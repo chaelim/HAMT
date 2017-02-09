@@ -9,11 +9,8 @@ project(HAMT)
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Sub-directories where more CMakeLists.txt exist
-add_subdirectory(Test)
-
 # Turn on CMake testing capabilities
 enable_testing()
 
-# Add test cases
-add_test(SimpleTest Test/HAMTTest)
+# Sub-directories where more CMakeLists.txt exist
+add_subdirectory(Test)

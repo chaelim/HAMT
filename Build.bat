@@ -57,8 +57,7 @@ goto :EndOfScript
     pushd %ScriptPath%\_build
     cmake .. -G "Visual Studio %VC_VER_STR% Win64"
     cmake --build . --config Release
-    ctest . -C Release
-    if exist Testing\Temporary\LastTest.log type Testing\Temporary\LastTest.log
+    ctest . -C Release -V
     popd
 
 :EndOfScript

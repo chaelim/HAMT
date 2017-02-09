@@ -19,16 +19,20 @@
 // by platform specific heap manager implementation.
 // e.g. Windows LFH
 #if HAMT_TEST_USE_DLMALLOC
+
 extern "C"
 {
     void* dlmalloc(size_t);
     void  dlfree(void*);
 }
+
 inline void* operator new(size_t size){ return dlmalloc(size); }
+
 inline void operator delete(void* p)
 {
     return dlfree(p);
 }
+
 #endif
 
 
@@ -44,6 +48,7 @@ typedef int64_t s64;
 const uint32 MAX_TEST_ENTRIES = 1000000;
 
 #ifdef WIN32
+
 #include <conio.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -51,7 +56,8 @@ const uint32 MAX_TEST_ENTRIES = 1000000;
 //===========================================================================
 // Timing functions
 //===========================================================================
-u64 GetMicroTime() {
+u64 GetMicroTime()
+{
     u64 hz;
     QueryPerformanceFrequency((LARGE_INTEGER*)&hz);
 
@@ -59,13 +65,17 @@ u64 GetMicroTime() {
     QueryPerformanceCounter((LARGE_INTEGER*)&t);
     return (t * 1000000) / hz;
 }
+
 #else
+
 #include <sys/time.h>
-u64 GetMicroTime() {
+u64 GetMicroTime()
+{
     timeval t;
     gettimeofday(&t,NULL);
     return t.tv_sec * 1000000ull + t.tv_usec;
 }
+
 #endif
 
 void TestHashTrie ()
@@ -146,6 +156,7 @@ void TestHashTrie ()
     printf("   %10u usec\n\n", int(GetMicroTime() - t0));
 }
 
-int main (int argc, int argv[]) {
+int main (int argc, int argv[])
+{
     TestHashTrie();
 }

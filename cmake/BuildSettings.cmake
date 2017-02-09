@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 
 #
-# Platfor specific flags
+# Platform specific flags
 #
 if(${WIN32})
     add_definitions(-DWIN32)

@@ -14,7 +14,7 @@ include(../cmake/BuildSettings.cmake)
 
 # Maps to a solution file (Tutorial.sln). The solution will 
 # have all targets (exe, lib, dll) as projects (.vcproj)
-project(HAMTTest)
+project(SimplePerfTest)
 
 # Turn on the ability to create folders to organize projects (.vcproj)
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
@@ -43,6 +43,13 @@ endif()
 
 add_executable(${PROJECT_NAME}  ${SRCFILES} ${INCFILES} config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    COMPILE_DEFINITIONS "$<$<CXX_COMPILER_ID:MSVC>:_SCL_SECURE_NO_WARNINGS>"
+    COMPILE_OPTIONS "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>"
+)
+
 # Add subdirectories with dependencies before dependents so that each subdirectory
 # inherits the include paths gathered from the dependencies before it.
 add_subdirectory(../src HAMT)
@@ -51,5 +58,14 @@ add_subdirectory(../src HAMT)
 target_link_libraries(${PROJECT_NAME} HAMT)
 
 # Adds logic to INSTALL.vcproj to copy HAMTTest.exe to destination directory
-install(TARGETS HAMTTest
+install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${PROJECT_BINARY_DIR}/bin)
+
+# Turn on CMake testing capabilities
+enable_testing()
+
+# Add test cases
+add_test(NAME ${PROJECT_NAME}
+        CONFIGURATIONS Release
+        COMMAND ${PROJECT_NAME}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
