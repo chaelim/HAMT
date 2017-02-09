@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/qtyham872bkcbdwm/branch/dev?svg=true)](https://ci.appveyor.com/project/chaelim/hamt)
+
 C++ Template class implementation of Hash Array Mapped Trie
 ================================
 
