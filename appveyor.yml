@@ -1,10 +1,42 @@
-version: '{build}'
-os: Visual Studio 2015
+#---------------------------------#
+#      general configuration      #
+#---------------------------------#
+
+# version format
+version: 1.0.{build}
+
+# you can use {branch} name in version format too
+# version: 1.0.{build}-{branch}
+
+# branches to build
+branches:
+  # blacklist
+  except:
+    - gh-pages
+
+#---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# Build worker image (VM template)
+image: Visual Studio 2017
+
 init: []
+
 install: []
+
+#---------------------------------#
+#       build configuration       #
+#---------------------------------#
+
 build_script:
-- set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
-- cmake . -G "Visual Studio 14 2015"
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+- cmake . -G "Visual Studio 15 2017"
 - cmake --build . --config Release
+
+#---------------------------------#
+#       tests configuration       #
+#---------------------------------#
+
 test_script:
 - ctest -C Release -V
