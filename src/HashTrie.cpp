@@ -97,8 +97,8 @@ FORCE_INLINE uint64_t fmix(uint64_t k) noexcept
 uint32 MurmurHash3_x86_32(
     const void * key,
     int len,
-    uint32_t seed
-) noexcept {
+    uint32_t seed) noexcept
+{
     const uint8_t * data = (const uint8_t *)key;
     const int nblocks = len / 4;
 
