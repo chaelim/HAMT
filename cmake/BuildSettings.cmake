@@ -22,8 +22,8 @@ if(${MSVC})
     set(CMAKE_CXX_FLAGS "/GS- /Zi" CACHE STRING "Common C++ compiler settings" FORCE)
     set(CMAKE_C_FLAGS_DEBUG "/MTd /Od /D_DEBUG" CACHE STRING "Additional C compiler settings in Debug" FORCE)
     set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Od /D_DEBUG" CACHE STRING "Additional C++ compiler settings in Debug" FORCE)
-    set(CMAKE_C_FLAGS_RELEASE "/MT /O2 /Ob1 /DNDEBUG" CACHE STRING "Additional C compiler settings in Release" FORCE)
-    set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob1 /DNDEBUG" CACHE STRING "Additional C++ compiler settings in Release" FORCE)
+    set(CMAKE_C_FLAGS_RELEASE "/MT /O2 /Ob2 /GL /DNDEBUG" CACHE STRING "Additional C compiler settings in Release" FORCE)
+    set(CMAKE_CXX_FLAGS_RELEASE "/MT /O2 /Ob2 /GL /DNDEBUG" CACHE STRING "Additional C++ compiler settings in Release" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS "/DYNAMICBASE:NO /DEBUG /INCREMENTAL:NO" CACHE STRING "Common linker settings" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "" CACHE STRING "Additional linker settings in Debug" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "" CACHE STRING "Additional linker settings in Release" FORCE)
@@ -34,7 +34,7 @@ if(${MSVC})
     # Set compiler flags and options.
     # Here it is setting the Visual Studio warning level to 4
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    
+
     # /EHsc : Catches C++ exceptions only and tells the compiler to assume that
     # functions declared as extern "C" never throw a C++ exception.
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
