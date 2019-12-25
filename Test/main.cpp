@@ -55,7 +55,6 @@ inline void operator delete[](void* p)
 
 #include <HashTrie.h>
 
-
 typedef unsigned char u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -65,7 +64,7 @@ typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;
 
-const uint32 MAX_TEST_ENTRIES = 1000000;
+constexpr uint32 MAX_TEST_ENTRIES = 1000000;
 
 #ifdef WIN32
 
@@ -98,7 +97,7 @@ u64 GetMicroTime()
 
 #endif
 
-void TestHashTrie ()
+void TestHashTrie()
 {
     // uint32 to uint32 key/vaue pair example
     struct Test : THashKey32<uint32>
@@ -115,9 +114,9 @@ void TestHashTrie ()
     };
 
     //
-    // int test
+    // integer test
     //
-    HASH_TRIE(Test, THashKey32<uint32>) test_uint32;
+    THashTrie<Test, THashKey32<uint32>> test_uint32;
 
     printf("32 bit integer test...\n");
     printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
@@ -131,7 +130,8 @@ void TestHashTrie ()
 
     printf("2) Find %d entries:   ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
-    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++) {
+    for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++)
+    {
         auto find = test_uint32.Find(THashKey32<uint32>(i));
         volatile uint32 value = find->Get();
         assert(value == i);
@@ -142,7 +142,7 @@ void TestHashTrie ()
     t0 = GetMicroTime();
     for (uint32 i = 0; i < MAX_TEST_ENTRIES; i++)
     {
-        Test *removed = test_uint32.Remove(THashKey32<uint32>(i));
+        Test* removed = test_uint32.Remove(THashKey32<uint32>(i));
         assert(removed != 0);
         assert(removed->Get() == i);
         delete removed;
@@ -152,7 +152,7 @@ void TestHashTrie ()
     // THashTrieInt test
     THashTrieInt<int32> test_hashTrieInt;
 
-    printf("32 bit integer test using THashTrieInt...\n");
+    printf("32 bit integer key/value pairs test using THashTrieInt...\n");
     printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
     t0 = GetMicroTime();
     for (int32 i = 0; i < MAX_TEST_ENTRIES; i++)
@@ -166,7 +166,7 @@ void TestHashTrie ()
     t0 = GetMicroTime();
     for (int32 i = 0; i < MAX_TEST_ENTRIES; i++)
     {
-        volatile auto * find = test_hashTrieInt.Find(i);
+        volatile auto* find = test_hashTrieInt.Find(i);
         assert(find->value == i);
     }
     printf("   %10u usec\n", int(GetMicroTime() - t0));
@@ -183,7 +183,7 @@ void TestHashTrie ()
     //
     // String hash test
     //
-    HASH_TRIE(TestStr, CHashKeyStrAnsiChar)    test_str;
+    THashTrie<TestStr, CHashKeyStrAnsiChar> test_str;
 
     printf("ANSI string test...\n");
     printf("1) Add %d entries:    ", MAX_TEST_ENTRIES);
@@ -203,7 +203,7 @@ void TestHashTrie ()
     {
         char buffer[16];
         sprintf_s(buffer, "%d", i);
-        TestStr *find = test_str.Find(CHashKeyStrAnsiChar(buffer));
+        TestStr* find = test_str.Find(CHashKeyStrAnsiChar(buffer));
         assert(strcmp(find->GetString(), buffer) == 0);
     }
     printf("   %10u usec\n", int(GetMicroTime() - t0));
