@@ -94,10 +94,7 @@ FORCE_INLINE uint64_t fmix(uint64_t k) noexcept
   return k;
 }
 
-uint32 MurmurHash3_x86_32(
-    const void * key,
-    int len,
-    uint32_t seed) noexcept
+uint32 MurmurHash3_x86_32(const void* key, int len, uint32_t seed) noexcept
 {
     const uint8_t * data = (const uint8_t *)key;
     const int nblocks = len / 4;
@@ -112,7 +109,8 @@ uint32 MurmurHash3_x86_32(
 
     const uint32_t * blocks = (const uint32_t *)(data + nblocks * 4);
 
-    for (int i = -nblocks; i; i++) {
+    for (int i = -nblocks; i; i++)
+    {
         uint32_t k1 = getblock(blocks,i);
 
         k1 *= c1;
@@ -131,7 +129,8 @@ uint32 MurmurHash3_x86_32(
 
     uint32_t k1 = 0;
 
-    switch(len & 3) {
+    switch(len & 3)
+    {
         case 3: k1 ^= tail[2] << 16;
         case 2: k1 ^= tail[1] << 8;
         case 1: k1 ^= tail[0];
